@@ -33,6 +33,9 @@ column_one = [
 
 column_two = [
     [
+        sg.Button("DATA PREVIEW"),
+    ],
+    [
         sg.Button("TRAINING"),
     ],
 
@@ -67,6 +70,9 @@ while True:
         from subprocess import call
         call(["python3", "training_gui.py"])
 
+    if event == "DATA PREVIEW":
+        from subprocess import call
+        call(["python3", "data_preview.py"])
 
     if event == "PREDICT" :
         if values["-YES-"] == True:

@@ -19,6 +19,11 @@ def training_dataset(layer_1, layer_2, layer_3, epoch) :
     # Load dataset to project
     df = pd.read_csv("./dataset.csv")
 
+    fig, ax = plt.subplots(figsize=(6,6))
+    sns.heatmap(df.corr(), annot=True)
+    # save image
+    plt.savefig('./export/heatmap.png', bbox_inches='tight',)
+
     # use only 3 parameter ==> Age, Balance, isActiveMember based on Heatmap
 
     new_category = df[["Age","Balance","IsActiveMember","CreditScore","Exited"]]
