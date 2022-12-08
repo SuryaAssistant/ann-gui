@@ -13,16 +13,17 @@ column_one = [
         sg.Image('ann_resize.png', size=(300,300))
     ],
     [
-        sg.Text("Layer 1"),
-        sg.InputText(key="-L1-", do_not_clear=True, size=(10,1)),
-        sg.Text("Layer 2"),
-        sg.InputText(key="-L2-", do_not_clear=True, size=(10,1)),
-        sg.Text("Layer 3"),
-        sg.InputText(key="-L3-", do_not_clear=True, size=(10,1)),
+        sg.Text("Hidden Layer Dimension"),
+        sg.InputText(key="-HL-", do_not_clear=True, size=(10,1)),
     ],
     [
         sg.Text("Epoch"),
         sg.InputText(key="-EPOCH-", do_not_clear=True, size=(10,1)),
+    ],
+    [
+        sg.Text("Train Size"),
+        sg.InputText(key="-TRAINSIZE-", do_not_clear=True, size=(10,1)),
+        sg.Text("%"),
     ],
 ]
 
@@ -65,12 +66,11 @@ while True:
 
         window['-TRAININGRESULT-'].update("Training process ...")
 
-        layer1 = int(values["-L1-"])
-        layer2 = int(values["-L2-"])
-        layer3 = int(values["-L3-"])
+        layer1 = int(values["-HL-"])
         ep = int(values["-EPOCH-"])
+        tr_size = int(values["-TRAINSIZE-"])
 
-        get_score = training.training_dataset(layer_1=layer1, layer_2=layer2, layer_3=layer3, epoch=ep)
+        get_score = training.training_dataset(hidden_dimension = layer1, epoch=ep, train_size=tr_size)
 
         window['-TRAININGRESULT-'].update("ANN Model Updated.")
         text = "Score : " + str(get_score)

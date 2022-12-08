@@ -29,14 +29,20 @@ column_one = [
     [
         sg.Button("PREDICT"), sg.Text("Result : ", key="-RESULT-"),
     ],
+    [
+        sg.Text("Exit Probability : ", key="-PROBRES-"),
+    ],
 ]
 
 column_two = [
-    [
-        sg.Button("DATA PREVIEW"),
-    ],
+    #[
+     #   sg.Button("DATA PREVIEW"),
+    #],
     [
         sg.Button("TRAINING"),
+    ],
+    [
+        sg.Button("MODEL PERFORMANCE"),
     ],
 
 ]
@@ -74,6 +80,10 @@ while True:
         from subprocess import call
         call(["python3", "data_preview.py"])
 
+    if event == "MODEL PERFORMANCE":
+        from subprocess import call
+        call(["python3", "performance.py"])
+
     if event == "PREDICT" :
         if values["-YES-"] == True:
             active = 1
@@ -85,7 +95,6 @@ while True:
         credit = values["-CREDIT-"]
 
         # Load model
-        ann_model = joblib.load("model.joblib")
         to_predict = [0, 0, 0, 0]
 
         import numpy as np
@@ -101,11 +110,24 @@ while True:
             to_predict = to_predict.reshape(1, -1)
             to_predict = scaler.transform(to_predict)
 
-        get_result = ann_model.predict(to_predict)
+        from tensorflow import keras
+        model = keras.models.load_model('./model/ann.h5')
 
-        if get_result == 1:
+        get_result = model.predict(to_predict)
+        final_result = 0
+        print(get_result[0][0])
+        if(get_result[0][0] >= 0.5):
+            final_result = 1
+        if(get_result[0][0] < 0.5):
+            final_result = 0
+
+
+        if final_result == 1:
             window['-RESULT-'].update('Result : EXIT', background_color= "red", text_color="white")
-        if get_result == 0:
+        if final_result == 0:
             window['-RESULT-'].update('Result : STAY', background_color= "green", text_color="white")
+
+        probtext = "Exit Probabilit : " + str(get_result[0][0])
+        window['-PROBRES-'].update(probtext)
 
 window.close()

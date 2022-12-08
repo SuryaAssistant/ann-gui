@@ -1,4 +1,4 @@
-def training_dataset(layer_1, layer_2, layer_3, epoch) :
+def training_dataset(hidden_dimension = 20, epoch = 10, train_size = 70) :
     # General library(s)
     import pandas as pd
     import numpy as np
@@ -52,10 +52,10 @@ def training_dataset(layer_1, layer_2, layer_3, epoch) :
     y = ['Exited']
     x = [i for i in data_vars if i not in y]
 
-    # Use 70% data for training and 30% for testing
+    tst_size = (100 - train_size)/100
     x_train, x_test, y_train, y_test = train_test_split(data_upsampled[x], 
                                                         data_upsampled[y], 
-                                                        test_size=0.3, 
+                                                        test_size=tst_size, 
                                                         random_state=0)
 
     # Normalize train data
@@ -73,22 +73,61 @@ def training_dataset(layer_1, layer_2, layer_3, epoch) :
         scaler = pkl.load(infile)
         x_test = scaler.transform(x_test) 
 
+    import keras
+    from keras.models import Sequential
+    from keras.layers import Dense
 
-    # Sci-kit learn ANN
-    # Use 3 hidden layer with 10 unit for each hidden layer
-    mlp = MLPClassifier(hidden_layer_sizes=(layer_1,layer_2,layer_3), 
-                        activation='relu', 
-                        solver='sgd', 
-                        max_iter=epoch)
+    classifier = Sequential()
+    classifier.add(Dense(units=hidden_dimension, kernel_initializer='he_uniform', activation='relu', input_dim = 4))
 
-    mlp.fit(x_train,y_train.values.ravel())
+    ## Menambahkan hidden layer
+    classifier.add(Dense(units=6, kernel_initializer='he_uniform', activation='relu'))
+
+    ## Menambahkan output layer
+    classifier.add(Dense(units=1, kernel_initializer='glorot_uniform', activation='relu'))
+
+    ## Compile
+    classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+    model_history = classifier.fit(x_train, y_train, batch_size=10, validation_split=0.33, epochs=epoch)
+
+    # accuracy history
+    plt.figure(figsize=(6,6))
+    plt.plot(model_history.history['accuracy'])
+    plt.plot(model_history.history['val_accuracy'])
+    plt.title('Model Accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='lower right')
+    plt.savefig('./export/accuracy.png', bbox_inches='tight',)
+
+    ## loss
+    plt.figure(figsize=(6,6))
+    plt.plot(model_history.history['loss'])
+    plt.plot(model_history.history['val_loss'])
+    plt.title('Model Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper right')
+    plt.savefig('./export/loss.png', bbox_inches='tight',)
+
     # Save Model
-    import joblib
+    classifier.save('./model/ann.h5')
+    final_accuracy = model_history.history["accuracy"][epoch-1]
 
-    filename = "model.joblib"
-    joblib.dump(mlp, filename)
+    #to_predict = [42, 0, 1, 619]
+    #to_predict = np.array(to_predict)
+    #to_predict = to_predict.reshape(1, -1)
+    #to_predict = scaler.transform(to_predict)
+
+    #from tensorflow import keras
+    #model = keras.models.load_model('./model/ann.h5')
+
+    #get_result = model.predict(to_predict)
+    #print(get_result)
+
+    return final_accuracy
 
 
-    training_score = mlp.score(x_train, y_train)
-
-    return training_score    
+if __name__ == "__main__":
+    training_dataset()
